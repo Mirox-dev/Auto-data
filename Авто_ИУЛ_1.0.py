@@ -261,7 +261,7 @@ class App:
         root.title("Создание информационно-удостоверяющего листа (УЛ)")
 
         # Размер окна
-        root.geometry("1400x400")
+        root.geometry("1200x400")
         root.resizable(True, True)
 
         # Шрифт для всех виджетов
@@ -286,7 +286,7 @@ class App:
         # UI элементы
         Label(root, text="Выберите папку или файл:", font=self.my_font).grid(row=0, column=0, sticky=W, padx=10,
                                                                              pady=10)
-        self.path_entry = Entry(root, textvariable=self.selected_path, width=60, font=self.my_font)
+        self.path_entry = Entry(root, textvariable=self.selected_path, width=45, font=self.my_font)
         self.path_entry.grid(row=0, column=1, columnspan=1, padx=10, pady=10, sticky=W + E)
 
         # Две отдельные кнопки для выбора файла и папки
