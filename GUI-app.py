@@ -3,8 +3,8 @@ import os
 import hashlib
 import zlib
 from datetime import datetime
-from tkinter.ttk import Combobox
-from tkinter import Tk, Label, Button, Entry, StringVar, IntVar, W, E, messagebox
+from tkinter.ttk import Combobox, Style
+from tkinter import Tk, Label, Button, Entry, StringVar, W, E, messagebox
 from tkinter import filedialog
 from docx import Document
 from docx.shared import Pt, Cm
@@ -260,6 +260,22 @@ class App:
         self.root = root
         root.title("Создание информационно-удостоверяющего листа (УЛ)")
 
+        # Размер окна
+        root.geometry("1400x400")
+        root.resizable(True, True)
+
+        # Шрифт для всех виджетов
+        self.my_font = ("Times New Roman", 18)
+
+        # Стиль для ttk виджетов
+        style = Style()
+        style.configure("TButton", font=self.my_font)
+        style.configure("TLabel", font=self.my_font)
+        style.configure("TEntry", font=self.my_font)
+        style.configure("TCombobox",
+                        padding=10,  # отступ внутри виджета (px)
+                        font=self.my_font)
+
         # Переменные
         self.selected_path = StringVar()
         self.selected_is_file = False
@@ -268,41 +284,47 @@ class App:
         self.workers = StringVar()
 
         # UI элементы
-        Label(root, text="Выберите папку или файл:").grid(row=0, column=0, sticky=W, padx=6, pady=6)
-        self.path_entry = Entry(root, textvariable=self.selected_path, width=60)
-        self.path_entry.grid(row=0, column=1, columnspan=2, padx=6, pady=6, sticky=W+E)
-        Button(root, text="Select folder/file", command=self.select_path).grid(row=0, column=3, padx=6, pady=6)
+        Label(root, text="Выберите папку или файл:", font=self.my_font).grid(row=0, column=0, sticky=W, padx=10,
+                                                                             pady=10)
+        self.path_entry = Entry(root, textvariable=self.selected_path, width=60, font=self.my_font)
+        self.path_entry.grid(row=0, column=1, columnspan=1, padx=10, pady=10, sticky=W + E)
 
-        Label(root, text="Выберите тип шифрования:").grid(row=1, column=0, sticky=W, padx=6, pady=6)
+        # Две отдельные кнопки для выбора файла и папки
+        self.select_file_btn = Button(root, text="Выбрать файл", font=self.my_font, width=15, command=self.select_file)
+        self.select_file_btn.grid(row=0, column=2, padx=10, pady=10)
 
-        self.hash_choice = StringVar(value="MD5")
+        self.select_folder_btn = Button(root, text="Выбрать папку", font=self.my_font, width=15,
+                                        command=self.select_folder)
+        self.select_folder_btn.grid(row=1, column=2, padx=10, pady=10)
+
+        Label(root, text="Выберите тип шифрования:", font=self.my_font).grid(row=1, column=0, sticky=W, padx=10,
+                                                                             pady=10)
         self.hash_combo = Combobox(root, textvariable=self.hash_choice, values=["MD5", "CRC32"], state="readonly",
-                                   width=10)
-        self.hash_combo.grid(row=1, column=1, padx=6, pady=6, sticky=W)
+                                   width=20)
+        self.hash_combo.grid(row=1, column=1, padx=10, pady=10, sticky=W)
         self.hash_combo.current(0)
 
-        Label(root, text="Наименование файла (без .docx):").grid(row=2, column=0, sticky=W, padx=6, pady=6)
-        Entry(root, textvariable=self.output_name, width=30).grid(row=2, column=1, padx=6, pady=6)
+        Label(root, text="Наименование файла (без .docx):", font=self.my_font).grid(row=2, column=0, sticky=W, padx=10,
+                                                                                    pady=10)
+        Entry(root, textvariable=self.output_name, width=30, font=self.my_font).grid(row=2, column=1, padx=10, pady=10)
 
-        Label(root, text="Количество работников:").grid(row=3, column=0, sticky=W, padx=6, pady=6)
-        e_workers = Entry(root, textvariable=self.workers, width=10)
-        e_workers.grid(row=3, column=1, padx=6, pady=6, sticky=W)
+        Label(root, text="Количество работников:", font=self.my_font).grid(row=3, column=0, sticky=W, padx=10, pady=10)
+        Entry(root, textvariable=self.workers, width=10, font=self.my_font).grid(row=3, column=1, padx=10, pady=10,
+                                                                                 sticky=W)
 
-        Button(root, text="Создать УЛ", command=self.on_create).grid(row=4, column=0, columnspan=4, pady=10)
+        Button(root, text="Создать УЛ", font=self.my_font, command=self.on_create).grid(row=4, column=0, columnspan=4,
+                                                                                        pady=20)
+    def select_file(self):
+        p = filedialog.askopenfilename(title="Выберите файл")
+        if p:
+            self.selected_path.set(p)
+            self.selected_is_file = True
 
-    def select_path(self):
-        # Открываем промежуточное маленькое окно с выбором: файл или папка
-        choice = messagebox.askquestion("Выбор", "Выберите 'Да' чтобы выбрать файл, 'Нет' - папку.\n(Да = файл, Нет = папка)")
-        if choice == 'yes':  # файл
-            p = filedialog.askopenfilename(title="Выберите файл")
-            if p:
-                self.selected_path.set(p)
-                self.selected_is_file = True
-        else:
-            p = filedialog.askdirectory(title="Выберите папку")
-            if p:
-                self.selected_path.set(p)
-                self.selected_is_file = False
+    def select_folder(self):
+        p = filedialog.askdirectory(title="Выберите папку")
+        if p:
+            self.selected_path.set(p)
+            self.selected_is_file = False
 
     def on_create(self):
         path = self.selected_path.get().strip()
