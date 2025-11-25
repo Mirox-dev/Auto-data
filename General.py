@@ -4,21 +4,24 @@ import zlib
 from datetime import datetime
 from docx import Document
 from docx.shared import Pt
-from docx.oxml.ns import qn
 
 # Функции хэшей
 def get_md5(file_path):
     hash_md5 = hashlib.md5()
     with open(file_path, "rb") as f:
-        while chunk := f.read(8192):
+        chunk = f.read(8192)
+        while chunk:
             hash_md5.update(chunk)
+            chunk = f.read(8192)
     return hash_md5.hexdigest()
 
 def get_crc32(file_path):
     crc = 0
     with open(file_path, "rb") as f:
-        while chunk := f.read(8192):
+        chunk = f.read(8192)
+        while chunk:
             crc = zlib.crc32(chunk, crc)
+            chunk = f.read(8192)
     return f"{crc & 0xFFFFFFFF:08x}"
 
 # Размер в байтах
@@ -35,7 +38,10 @@ def format_modification_date(file_path):
 
 # Создание отчета
 def create_word_report(directory_path, hash_type="md5"):
+    folder_name = os.path.basename(os.path.normpath(directory_path))
     doc = Document()
+    doc.add_heading(f"Отчет о файлах в папке: {folder_name}", level=1)
+
     # Таблица
     table = doc.add_table(rows=1, cols=4)
     table.style = "Table Grid"
@@ -48,7 +54,7 @@ def create_word_report(directory_path, hash_type="md5"):
     for i, header in enumerate(headers):
         run = hdr_cells[i].paragraphs[0].add_run(header)
         run.bold = True
-        hdr_cells[i].width = Pt(200)  # можно подстроить ширину
+        hdr_cells[i].width = Pt(200)
 
     # Заполнение данных
     for filename in os.listdir(directory_path):
