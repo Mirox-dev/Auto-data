@@ -1,0 +1,46 @@
+name: Build and run ELF
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build_and_run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Загружаем код
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Устанавливаем Python
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. Устанавливаем зависимости и PyInstaller
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt || true
+          pip install pyinstaller
+
+      # 4. Компилируем Python-программу в ELF
+      - name: Build ELF binary
+        run: |
+          pyinstaller --onefile Авто_ИУЛ_1.1.py
+          ls -l dist
+
+      # 5. Запускаем ELF бинарник
+      - name: Run ELF
+        run: |
+          chmod +x dist/main
+          echo "Running ELF binary:"
+          ./dist/main
+
+      # 6. Сохраняем ELF как артефакт
+      - name: Upload ELF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-elf
+          path: dist/main
