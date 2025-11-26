@@ -1,0 +1,43 @@
+name: Build for macOS, Windows, and Linux
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      # 1. Checkout репозитория
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2. Установка зависимостей (пример: Node.js)
+      # Если у вас другой язык (Go, Rust, Python, C++), замените шаг
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      # 3. Установка зависимостей
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Сборка
+      - name: Build project
+        run: npm run build
+
+      # 5. Загрузка артефактов
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}
+          path: build/
