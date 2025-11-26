@@ -1,4 +1,4 @@
-name: Build
+name: Build standalone executables
 
 on:
   push:
@@ -9,18 +9,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]   # Только Linux и macOS
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up compiler
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y build-essential
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
 
-      - name: Build
+      - name: Install dependencies
         run: |
-          echo "Compiling on ${{ matrix.os }}"
-          # Здесь ваша команда сборки
-          make
+          pip install -r requirements.txt || true
+          pip install pyinstaller
+
+      - name: Build executable
+        run: |
+          pyinstaller --onefile Авто_ИУЛ_1.1.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: myapp-${{ matrix.os }}
+          path: dist/
